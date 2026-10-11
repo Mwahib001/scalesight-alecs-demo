@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { LiveDate } from "./LiveDate";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   createContext,
   useContext,
@@ -109,6 +109,38 @@ export function useWorkspace() {
   if (!ctx) throw new Error("Workspace context missing");
   return ctx;
 }
+// Native history updates are integrated with Next's search params. Separate keys
+// retain each investigation across related routes, reloads and browser history.
+export function useInvestigationState<T extends string | number | boolean>(
+  key: string,
+  initial: T,
+  allowed?: readonly T[],
+): [T, (value: T) => void] {
+  const search = useSearchParams();
+  const raw = search.get(key);
+  const parsed =
+    raw === null
+      ? initial
+      : typeof initial === "number"
+        ? Number(raw)
+        : typeof initial === "boolean"
+          ? raw === "true"
+          : raw;
+  const value =
+    (allowed && !allowed.includes(parsed as T)) ||
+    (typeof parsed === "number" && !Number.isFinite(parsed))
+      ? initial
+      : (parsed as T);
+  return [
+    value,
+    (next: T) => {
+      const url = new URL(window.location.href);
+      if (next === initial) url.searchParams.delete(key);
+      else url.searchParams.set(key, String(next));
+      window.history.pushState(null, "", url.pathname + url.search);
+    },
+  ];
+}
 export function ContextLink({
   to,
   sku,
@@ -129,8 +161,7 @@ export function ContextLink({
 }
 export function Workspace({ children }: { children: ReactNode }) {
   const path = usePathname(),
-    search = useSearchParams(),
-    router = useRouter();
+    search = useSearchParams();
   const rawSku = products.findIndex((p) => p.id === search.get("sku")),
     sku = rawSku < 0 ? (path === "/allocation" ? 3 : 0) : rawSku;
   const rawCohort = ["A", "B", "C", "D"].indexOf(search.get("cohort") ?? "A"),
@@ -163,13 +194,15 @@ export function Workspace({ children }: { children: ReactNode }) {
       .map((g) => g.items.find((i) => i[0] === path)?.[1])
       .find(Boolean) ?? "Weekly Decision Brief";
   function update(values: Record<string, string | null>) {
-    const params = new URLSearchParams(search.toString());
+    const params = new URLSearchParams(window.location.search);
     Object.entries(values).forEach(([k, v]) =>
       v === null ? params.delete(k) : params.set(k, v),
     );
-    router.push(`${path}${params.size ? "?" + params.toString() : ""}`, {
-      scroll: false,
-    });
+    window.history.pushState(
+      null,
+      "",
+      `${path}${params.size ? "?" + params.toString() : ""}`,
+    );
   }
   function setScenario(s: Exploration) {
     validate(s);
@@ -266,69 +299,71 @@ export function Workspace({ children }: { children: ReactNode }) {
         {nav}
       </dialog>
       <div className="workspace">
-        <header className="topbar">
-          <div className="breadcrumb">
-            <button
-              className="icon-button menu-toggle"
-              aria-label="Open navigation"
-              aria-expanded={menu}
-              onClick={() => {
-                setMenu(true);
-                navDialog.current?.showModal();
-              }}
-            >
-              <Menu size={20} />
-            </button>
-            <span className="workspace-identity">
-              Alec’s × ScaleSight<small>Retail-to-Production Planning</small>
-            </span>
-            <ChevronRight size={13} />
-            <strong>{current}</strong>
-          </div>
-          <span className="data-badge">
-            <FlaskConical size={13} /> Illustrative data
-          </span>
-        </header>
-        <div className="review-bar">
-          <span>
-            <CalendarDays size={14} /> Review date: <LiveDate />
-          </span>
-          <span className={active ? "exploring-state" : "baseline-state"}>
-            {active ? <FlaskConical size={13} /> : <Check size={13} />}{" "}
-            {active
-              ? `Exploring: ${scenario.demandChange !== 0 ? `${products[scenario.demandSku].short === "Breakfast" ? "Collaboration" : products[scenario.demandSku].short} demand ${scenario.demandChange > 0 ? "+" : ""}${scenario.demandChange}%` : scenario.timingShift !== 0 ? `Release shift ${scenario.timingShift > 0 ? "+" : ""}${scenario.timingShift} week(s)` : scenario.basePercent !== 100 ? `Base availability ${scenario.basePercent}%` : (scenarios.find((s) => s.id === scenario.preset)?.label ?? "Custom inputs")}`
-              : "Reviewed baseline"}
-          </span>
-          {active && (
-            <button
-              className="reset"
-              onClick={() => setScenario({ ...baselineExploration })}
-            >
-              <RefreshCcw size={13} /> Reset exploration
-            </button>
-          )}
-        </div>
-        <p className="disclosure">{disclosure}</p>
-        {invalid && (
-          <p role="alert" className="warning">
-            Enter a value within the supported scenario range. Reviewed baseline
-            shown; invalid URL inputs have not been calculated.
-          </p>
-        )}
-        {active && (
-          <div className="exploration-banner">
-            <FlaskConical size={17} />
-            <div>
-              <strong>
-                Exploration · reviewed recommendation remains unchanged
-              </strong>
-              <p>
-                Simulated outcome. A changed recommendation requires specialist
-                review and client context.
-              </p>
+        <header>
+          <div className="topbar">
+            <div className="breadcrumb">
+              <button
+                className="icon-button menu-toggle"
+                aria-label="Open navigation"
+                aria-expanded={menu}
+                onClick={() => {
+                  setMenu(true);
+                  navDialog.current?.showModal();
+                }}
+              >
+                <Menu size={20} />
+              </button>
+              <span className="workspace-identity">
+                Alec’s × ScaleSight<small>Retail-to-Production Planning</small>
+              </span>
+              <ChevronRight size={13} />
+              <strong>{current}</strong>
             </div>
+            <span className="data-badge">
+              <FlaskConical size={13} /> Illustrative data
+            </span>
           </div>
-        )}
+          <div className="review-bar">
+            <span>
+              <CalendarDays size={14} /> Review date: <LiveDate />
+            </span>
+            <span className={active ? "exploring-state" : "baseline-state"}>
+              {active ? <FlaskConical size={13} /> : <Check size={13} />}{" "}
+              {active
+                ? `Exploring: ${scenario.demandChange !== 0 ? `${products[scenario.demandSku].short === "Breakfast" ? "Collaboration" : products[scenario.demandSku].short} demand ${scenario.demandChange > 0 ? "+" : ""}${scenario.demandChange}%` : scenario.timingShift !== 0 ? `Release shift ${scenario.timingShift > 0 ? "+" : ""}${scenario.timingShift} week(s)` : scenario.basePercent !== 100 ? `Base availability ${scenario.basePercent}%` : (scenarios.find((s) => s.id === scenario.preset)?.label ?? "Custom inputs")}`
+                : "Reviewed baseline"}
+            </span>
+            {active && (
+              <button
+                className="reset"
+                onClick={() => setScenario({ ...baselineExploration })}
+              >
+                <RefreshCcw size={13} /> Reset exploration
+              </button>
+            )}
+          </div>
+          <p className="disclosure">{disclosure}</p>
+          {invalid && (
+            <p role="alert" className="warning">
+              Enter a value within the supported scenario range. Reviewed
+              baseline shown; invalid URL inputs have not been calculated.
+            </p>
+          )}
+          {active && (
+            <div className="exploration-banner">
+              <FlaskConical size={17} />
+              <div>
+                <strong>
+                  Exploration · reviewed recommendation remains unchanged
+                </strong>
+                <p>
+                  Simulated outcome. A changed recommendation requires
+                  specialist review and client context.
+                </p>
+              </div>
+            </div>
+          )}
+        </header>
         <main id="main-content">
           {children}
           <footer>
@@ -435,7 +470,11 @@ export function ProductSelect() {
   return (
     <label className="select-label">
       Product
-      <select value={sku} onChange={(e) => setSku(Number(e.target.value))}>
+      <select
+        aria-label="Product"
+        value={sku}
+        onChange={(e) => setSku(Number(e.target.value))}
+      >
         {products.map((p, i) => (
           <option key={p.id} value={i}>
             {p.id} · {p.name}
@@ -575,7 +614,7 @@ export function Table({
       className="table-scroll"
       tabIndex={0}
       role="region"
-      aria-label={caption ?? "Planning comparison"}
+      aria-label={caption ?? headers.join(" / ")}
     >
       <table>
         {caption && <caption>{caption}</caption>}

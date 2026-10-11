@@ -1,0 +1,57 @@
+[
+  {
+    "test": "alecs-direct-route-",
+    "violations": ["color-contrast", "region"],
+    "evidence": "test-results/alecs-direct-route-/error-context.md"
+  },
+  {
+    "test": "alecs-direct-route-allocation",
+    "violations": ["heading-order", "region"],
+    "evidence": "test-results/alecs-direct-route-allocation/error-context.md"
+  },
+  {
+    "test": "alecs-direct-route-cash",
+    "violations": ["color-contrast", "landmark-unique", "region"],
+    "evidence": "test-results/alecs-direct-route-cash/error-context.md"
+  },
+  {
+    "test": "alecs-direct-route-cohorts",
+    "violations": ["color-contrast", "landmark-unique", "region"],
+    "evidence": "test-results/alecs-direct-route-cohorts/error-context.md"
+  },
+  {
+    "test": "alecs-direct-route-components",
+    "violations": ["color-contrast", "landmark-unique", "region"],
+    "evidence": "test-results/alecs-direct-route-components/error-context.md"
+  },
+  {
+    "test": "alecs-direct-route-forecast-learning",
+    "violations": ["color-contrast", "landmark-unique", "region"],
+    "evidence": "test-results/alecs-direct-route-forecast-learning/error-context.md"
+  },
+  {
+    "test": "alecs-direct-route-incrementality",
+    "violations": ["color-contrast", "region"],
+    "evidence": "test-results/alecs-direct-route-incrementality/error-context.md"
+  },
+  {
+    "test": "alecs-direct-route-managed-intelligence",
+    "violations": ["color-contrast", "region"],
+    "evidence": "test-results/alecs-direct-route-managed-intelligence/error-context.md"
+  },
+  {
+    "test": "alecs-direct-route-production",
+    "violations": ["color-contrast", "landmark-unique", "region"],
+    "evidence": "test-results/alecs-direct-route-production/error-context.md"
+  },
+  {
+    "test": "alecs-direct-route-reorder-quality",
+    "violations": ["color-contrast", "region"],
+    "evidence": "test-results/alecs-direct-route-reorder-quality/error-context.md"
+  },
+  {
+    "test": "alecs-direct-route-scenarios",
+    "violations": ["color-contrast", "region"],
+    "evidence": "test-results/alecs-direct-route-scenarios/error-context.md"
+  }
+]

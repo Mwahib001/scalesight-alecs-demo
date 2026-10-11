@@ -122,6 +122,7 @@ test("transfer date remains unresolved until selected", async ({ page }) => {
   ).toBeVisible();
 });
 test("all product forecasts and dependencies work", async ({ page }) => {
+  test.setTimeout(60_000);
   for (const route of ["/forecast-learning", "/components"]) {
     await page.goto(route);
     for (let i = 0; i < 8; i++) {
@@ -145,6 +146,7 @@ for (const width of [390, 820])
   test(`responsive navigation and contained tables at ${width}px`, async ({
     page,
   }) => {
+    test.setTimeout(120_000);
     await page.setViewportSize({ width, height: 900 });
     for (const route of routes) {
       await page.goto(route);

@@ -1,11 +1,11 @@
 "use client";
-import { useState } from "react";
 import { Check, CircleHelp } from "lucide-react";
 import {
   cohorts,
   latestCohort,
   preCohort,
   historicAnchors,
+  products,
   sum,
 } from "../data/alecs.v1";
 import { launchSummary, ratio } from "../engine/alecs";
@@ -20,11 +20,17 @@ import {
   Table,
   n,
   useWorkspace,
+  useInvestigationState,
 } from "./Workspace";
 import { evidence, productEvidence } from "./evidence";
 import { Waterfall } from "./PlanningCharts";
+const cohortColors = ["var(--primary)", "#7E5B43", "#A24D68", "#526999"];
+
 export function Incrementality() {
-  const [view, setView] = useState("observed");
+  const [view, setView] = useInvestigationState("launchView", "observed", [
+    "observed",
+    "counterfactual",
+  ]);
   const { sku } = useWorkspace();
   const s = launchSummary;
   return (
@@ -193,6 +199,7 @@ export function Incrementality() {
           evidence={productEvidence(
             sku,
             "Selected product launch history",
+            "Target consumer POS · 17 August–11 October 2026 · retailer observations",
             { cups: historicAnchors.map((r) => r[sku]) },
             "Each entry is a complete weekly Target-panel synthetic POS observation. Consumer POS is stored as integer four-packs.",
           )}
@@ -211,7 +218,10 @@ export function Incrementality() {
           "5 Oct",
         ]}
         rows={[
-          [`CC0${sku + 1} · cups`, ...historicAnchors.map((r) => n(r[sku]))],
+          [
+            `${products[sku].id} · ${products[sku].name} · cups`,
+            ...historicAnchors.map((r) => n(r[sku])),
+          ],
         ]}
       />
       <Review decision="Should the next commitment increase total output, change the flavor mix, or wait for another cycle of evidence?">
@@ -282,7 +292,12 @@ export function ReorderQuality() {
               )}
             />
           </div>
-          <div className="plot-scroll">
+          <div
+            className="plot-scroll"
+            tabIndex={0}
+            role="region"
+            aria-label={`Cohort ${c.id} receipts and consumption chart · horizontal scroll`}
+          >
             <svg
               viewBox="0 0 650 325"
               className="plot"
@@ -336,7 +351,13 @@ export function ReorderQuality() {
         </section>
         <section className="panel">
           <p className="eyebrow">
-            COHORT {c.id} / {c.label}
+            <span
+              className="cohort-badge"
+              style={{ background: cohortColors[cohort] }}
+            >
+              COHORT {c.id}
+            </span>{" "}
+            / {c.label}
           </p>
           <div
             className="mini-stats"
@@ -412,8 +433,15 @@ export function ReorderQuality() {
 }
 export function CohortView() {
   const { cohort } = useWorkspace();
-  const [counter, setCounter] = useState(false),
-    [compare, setCompare] = useState(1);
+  const [counter, setCounter] = useInvestigationState<boolean>(
+      "cohortCounterfactual",
+      false,
+    ),
+    [compare, setCompare] = useInvestigationState<number>(
+      "comparisonCohort",
+      1,
+      [0, 1, 2, 3],
+    );
   const c = cohorts[cohort];
   const y = (v: number) => 225 - (v / 850) * 175,
     x = (v: number) => 70 + (v / 35) * 470;
@@ -443,18 +471,19 @@ export function CohortView() {
               <span>Defined synthetic cohorts · 30 Target stores each</span>
             </div>
           </div>
-          <div className="plot-scroll">
+          <div
+            className="plot-scroll"
+            tabIndex={0}
+            role="region"
+            aria-label="Store cohort comparison chart · horizontal scroll"
+          >
             <svg
               viewBox="0 0 640 310"
               className="plot"
               role="img"
               aria-label="Cohort scatterplot. A and B have strong launch velocity but different portfolio movement; C has lower availability."
             >
-              <title>
-                Collaboration availability-normalized velocity versus{" "}
-                {counter ? "counterfactual-associated" : "observed"} portfolio
-                movement
-              </title>
+              <title>{`Collaboration availability-normalized velocity versus ${counter ? "counterfactual-associated" : "observed"} portfolio movement`}</title>
               {[0, 400, 800].map((v) => (
                 <g key={v}>
                   <line className="axis" x1="70" x2="560" y1={y(v)} y2={y(v)} />
@@ -474,10 +503,9 @@ export function CohortView() {
                       cx={x(velocity)}
                       cy={y(movement)}
                       r={i === cohort ? 18 : 13}
-                      fill={
-                        ["var(--primary)", "#7E5B43", "#A24D68", "#526999"][i]
-                      }
-                      opacity={i === cohort ? 1 : 0.75}
+                      fill={cohortColors[i]}
+                      stroke={i === cohort ? "var(--ink)" : "none"}
+                      strokeWidth="2"
                     />
                     <text
                       x={x(velocity)}
@@ -597,7 +625,9 @@ export function CohortView() {
       <Table
         headers={["SKU", "Prelaunch cups", "Latest cups"]}
         rows={latestCohort[cohort].map((v, i) => [
-          `CC0${i + 1}`,
+          <ContextLink key={products[i].id} to="/incrementality" sku={i}>
+            {products[i].id} · {products[i].name}
+          </ContextLink>,
           n(preCohort[cohort][i]),
           n(v),
         ])}

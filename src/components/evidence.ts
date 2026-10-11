@@ -27,13 +27,14 @@ export function evidence(
 export const productEvidence = (
   index: number,
   title: string,
+  scope: string,
   inputs: Record<string, unknown>,
   calculation: string,
   overrides: Partial<Evidence> = {},
 ) =>
   evidence(
     title,
-    `${products[index].id} · ${products[index].name} · aggregate brand-owned stock · W1–W8 (12 Oct–6 Dec 2026)`,
+    `${products[index].id} · ${products[index].name} · ${scope}`,
     inputs,
     calculation,
     { source: products[index].source, ...overrides },

@@ -34,4 +34,4 @@ The synthetic guide is executable at aggregate SKU scope. Unknown client inputs 
 - Forecast issue dates use the preceding Monday and actual-observation dates the following Monday, following Appendix 10.D. Interpolated control four-packs use half-up rounding (`Math.round`); stable-ID largest-remainder allocation follows Appendix 10.C.
 - Changed exploratory cost is calculated, but changed payment dates remain unspecified. The dated baseline payment schedule stays clearly identified and unchanged.
 - Final forward buffers are incomplete if the required future weeks lie outside the supplied 13-week forecast. No implied future supply is introduced.
-- The browser suite uses an externally started app. Production build, server startup and browser execution were intentionally deferred to the user.
+- The browser suite uses the externally started app and has been executed during completion QA. Production build and server startup remain deferred to the user; see `QA_REPORT.md` for the browser results.

@@ -19,6 +19,12 @@ import {
   sum,
 } from "../data/alecs.v1";
 export { sum };
+export type Violation = {
+  ruleId: string;
+  entityId: string;
+  severity: "error" | "blocked";
+  explanation: string;
+};
 export type Exploration = {
   preset: string;
   demandChange: number;
@@ -110,6 +116,7 @@ export function componentCoverage(mix: readonly number[], basePercent = 100) {
       ...meta("DERIVED METRIC", "SPEC-04.14", "A05"),
       required,
       available,
+      availableByRun: available,
       shortage: Math.max(0, required - available),
     };
   });
@@ -120,7 +127,9 @@ export function economics(mix: readonly number[]) {
   return {
     ...meta("DERIVED METRIC", "SPEC-04.18", "A08"),
     materials,
+    materialConsumption: materials,
     conversion,
+    conversionCost: conversion,
     productionCost: materials + conversion,
   };
 }
@@ -176,34 +185,55 @@ export function calculate(
           : products.map((p) => p.reviewed);
   const cap = capacity(mix),
     coverage = componentCoverage(mix, s.basePercent);
-  const violations: string[] = [];
+  const violations: Violation[] = [];
+  const violation = (
+    ruleId: string,
+    entityId: string,
+    explanation: string,
+    severity: Violation["severity"] = "error",
+  ) => violations.push({ ruleId, entityId, severity, explanation });
   if (!cap.feasible)
-    violations.push(
+    violation(
+      "MANUFACTURING_CAPACITY",
+      planningWindow.id,
       "Line hours or run increments exceed the available constraint.",
     );
   coverage
     .filter((c) => c.shortage > 1e-8)
     .forEach((c) =>
-      violations.push(
+      violation(
+        "COMPONENT_AVAILABLE_BY_RUN",
+        c.id,
         `${c.name}: ${c.shortage.toLocaleString("en-US")} ${c.unit} short before the production window.`,
       ),
     );
   mix.forEach((q, i) => {
     if (q / 4 > cartonStock[i])
-      violations.push(
+      violation(
+        "PRINTED_CARTON_COMPATIBILITY",
+        products[i].id,
         `${products[i].id}: compatible printed cartons are insufficient.`,
       );
-    if (q > 20000)
-      violations.push(`${products[i].id}: other ingredient kit insufficient.`);
+    if (q > bom[i].otherAvailable)
+      violation(
+        "SKU_INGREDIENT_KIT",
+        products[i].id,
+        `${products[i].id}: other ingredient kit insufficient.`,
+      );
   });
   if (s.timingShift < 0 && option !== "none")
-    violations.push(
+    violation(
+      "PRODUCTION_QA_TIMING",
+      planningWindow.id,
       "Earlier release requires production and QA timing review; the current window does not establish this supply.",
     );
   const manufacturingFeasible = violations.length === 0;
   if (s.preset === "S6")
-    violations.push(
+    violation(
+      "CLUB_PACK_COMPATIBILITY",
+      "HYPOTHETICAL-CLUB",
       "Blocked pending pack compatibility, permissions and supply review.",
+      "blocked",
     );
   const skuWeek = products.map((p, i) => {
     const demand = forward[i].map(
@@ -254,12 +284,15 @@ export function calculate(
   return {
     ...meta("DERIVED METRIC", "SPEC-04.21"),
     snapshotId: fixture.metadata.snapshotId,
+    optionId: option,
+    scenarioId: s.preset,
     scenario: s,
     option,
     mix,
     capacity: cap,
     components: coverage,
     economics: costs,
+    allocation: [transferCheck(null)],
     skuWeek,
     portfolio: {
       ...meta("DERIVED METRIC", "SPEC-04.21", "A03"),
@@ -277,7 +310,16 @@ export function calculate(
         (option === "requested"
           ? sum(materialTopups.map((p) => p.value))
           : allocation.freight + allocation.handling),
-      exploratoryPaymentDates: isExploring(s) ? null : payments,
+      exploratoryPaymentDates:
+        isExploring(s) || option !== "reviewed" ? null : payments,
+      datedFuturePayments:
+        isExploring(s) || option !== "reviewed" ? null : payments,
+      unresolvedTerms:
+        isExploring(s) || option !== "reviewed"
+          ? ["Changed scenario payment dates are not specified."]
+          : [
+              "AP-106 payment dates and cancellation/refund terms are not specified; excluded from baseline.",
+            ],
     },
     violations,
     manufacturingFeasible,
@@ -332,6 +374,7 @@ export function transferCheck(
   return {
     ...meta("DERIVED METRIC", "SPEC-04.17", "A09"),
     compatible,
+    eligible: compatible,
     arrival,
     arrivalBeforeNeed,
     donorResidual:
@@ -361,6 +404,12 @@ export type RawRecord = {
   issuedAt?: string;
   targetWeek?: string;
   paid?: boolean;
+  destination?: string;
+  packFormat?: string;
+  requirementPack?: string;
+  forecastIncludesOrders?: boolean;
+  addsOrdersAgain?: boolean;
+  staleMetadata?: boolean;
 };
 export function validateRaw(records: RawRecord[]) {
   const seen = new Set<string>();
@@ -371,15 +420,48 @@ export function validateRaw(records: RawRecord[]) {
       issue = "Unknown SKU";
     else if (r.unit && !["cups", "four-packs", "cases"].includes(r.unit))
       issue = "Unit mismatch";
+    else if (r.skuId === "CC01" && r.destination && r.destination !== "Target")
+      issue = "Invalid transfer destination";
+    else if (
+      r.packFormat &&
+      r.requirementPack &&
+      r.packFormat !== r.requirementPack
+    )
+      issue = "Pack incompatibility";
     else if (r.pos && r.availableDays === 0) issue = "Impossible availability";
     else if (r.quantity !== undefined && r.quantity < 0)
       issue = "Negative physical stock";
+    else if (r.quantity !== undefined && !Number.isInteger(r.quantity))
+      issue = "Invalid physical quantity";
     else if ("eta" in r && r.eta === null) issue = "Missing PO ETA";
     else if (r.issuedAt && r.targetWeek && r.issuedAt >= r.targetWeek)
       issue = "Forecast leakage";
     else if (r.paid) issue = "Previously paid: exclude from future cash";
+    else if (r.forecastIncludesOrders && r.addsOrdersAgain)
+      issue = "Duplicate demand: firm orders already consume forecast";
+    else if (r.staleMetadata)
+      issue = "Stale product metadata: current snapshot preferred";
     seen.add(r.id);
-    return { record: r, issue, excluded: issue !== null };
+    const metadataResolved =
+      issue === "Stale product metadata: current snapshot preferred";
+    const excluded = issue !== null && !metadataResolved;
+    return {
+      record: r,
+      issue,
+      issueId: issue
+        ? `DQ-${r.id}-${issue.split(":")[0].replaceAll(" ", "-")}`
+        : null,
+      entityId: r.skuId ?? r.id,
+      severity: issue === null ? null : excluded ? "error" : "warning",
+      excluded,
+      normalizedCups:
+        !excluded && r.quantity !== undefined && r.unit
+          ? convertToCups(r.quantity, r.unit as "cups" | "four-packs" | "cases")
+          : null,
+      resolvedProductName: metadataResolved
+        ? (products.find((p) => p.id === r.skuId)?.publicName ?? null)
+        : null,
+    };
   });
 }
 export const requiredReceipts = (
@@ -410,6 +492,8 @@ export function convertToCups(
   quantity: number,
   unit: "cups" | "four-packs" | "cases",
 ) {
+  if (!["cups", "four-packs", "cases"].includes(unit))
+    throw new Error("Unmapped physical unit");
   if (quantity < 0 || !Number.isInteger(quantity))
     throw new Error("Physical movements require nonnegative integer units");
   return quantity * { cups: 1, "four-packs": 4, cases: 24 }[unit];
@@ -425,6 +509,7 @@ export function lotEligible(
 ) {
   return (
     lot.owner === "brand" &&
+    ["Target", "Whole Foods", "Wegmans"].includes(requirement.retailer) &&
     lot.qaStatus === "Saleable" &&
     lot.skuId === requirement.skuId &&
     lot.packFormat === requirement.packFormat &&

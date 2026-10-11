@@ -1,0 +1,266 @@
+[
+  {
+    "route": "/scenarios?scenario=S7&scenarioHorizon=13",
+    "width": 320,
+    "drawer": {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/scenarios?scenario=S7&scenarioHorizon=13",
+    "width": 390,
+    "drawer": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/scenarios?scenario=S7&scenarioHorizon=13",
+    "width": 768,
+    "drawer": {
+      "x": 268,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/scenarios?scenario=S7&scenarioHorizon=13",
+    "width": 820,
+    "drawer": {
+      "x": 320,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/scenarios?scenario=S7&scenarioHorizon=13",
+    "width": 1024,
+    "drawer": {
+      "x": 524,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/scenarios?scenario=S7&scenarioHorizon=13",
+    "width": 1440,
+    "drawer": {
+      "x": 940,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/production?scenario=S5&productionHorizon=13",
+    "width": 320,
+    "drawer": {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/production?scenario=S5&productionHorizon=13",
+    "width": 390,
+    "drawer": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/production?scenario=S5&productionHorizon=13",
+    "width": 768,
+    "drawer": {
+      "x": 268,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/production?scenario=S5&productionHorizon=13",
+    "width": 820,
+    "drawer": {
+      "x": 320,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/production?scenario=S5&productionHorizon=13",
+    "width": 1024,
+    "drawer": {
+      "x": 524,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/production?scenario=S5&productionHorizon=13",
+    "width": 1440,
+    "drawer": {
+      "x": 940,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/components?scenario=S5&componentQuantity=12000",
+    "width": 320,
+    "drawer": {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/components?scenario=S5&componentQuantity=12000",
+    "width": 390,
+    "drawer": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/components?scenario=S5&componentQuantity=12000",
+    "width": 768,
+    "drawer": {
+      "x": 268,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/components?scenario=S5&componentQuantity=12000",
+    "width": 820,
+    "drawer": {
+      "x": 320,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/components?scenario=S5&componentQuantity=12000",
+    "width": 1024,
+    "drawer": {
+      "x": 524,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/components?scenario=S5&componentQuantity=12000",
+    "width": 1440,
+    "drawer": {
+      "x": 940,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/allocation?sku=CC04&destination=Hypothetical%20club",
+    "width": 320,
+    "drawer": {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/allocation?sku=CC04&destination=Hypothetical%20club",
+    "width": 390,
+    "drawer": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/allocation?sku=CC04&destination=Hypothetical%20club",
+    "width": 768,
+    "drawer": {
+      "x": 268,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/allocation?sku=CC04&destination=Hypothetical%20club",
+    "width": 820,
+    "drawer": {
+      "x": 320,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/allocation?sku=CC04&destination=Hypothetical%20club",
+    "width": 1024,
+    "drawer": {
+      "x": 524,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  },
+  {
+    "route": "/allocation?sku=CC04&destination=Hypothetical%20club",
+    "width": 1440,
+    "drawer": {
+      "x": 940,
+      "y": 0,
+      "width": 500,
+      "height": 900
+    },
+    "overflow": false
+  }
+]

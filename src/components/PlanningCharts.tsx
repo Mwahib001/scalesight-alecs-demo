@@ -1,5 +1,9 @@
 "use client";
-import { products, type forecastLedger } from "../data/alecs.v1";
+import {
+  planningWindow,
+  products,
+  type forecastLedger,
+} from "../data/alecs.v1";
 import { capacity, type calculate } from "../engine/alecs";
 import { money, n, useWorkspace } from "./Workspace";
 export function Schedule({
@@ -12,6 +16,13 @@ export function Schedule({
   const c = capacity(mix),
     { setSku } = useWorkspace();
   const active = mix.map((q, i) => ({ q, i })).filter((r) => r.q > 0);
+  const scaleHours =
+    Math.ceil(
+      Math.max(
+        planningWindow.availableHours,
+        capacity(products.map((p) => p.requested)).totalHours,
+      ) / 8,
+    ) * 8;
   return (
     <div className="schedule-row">
       <div className="schedule-label">
@@ -28,21 +39,24 @@ export function Schedule({
           <div key={r.i} style={{ display: "contents" }}>
             <button
               className="run-block"
+              aria-label={`${products[r.i].id} · ${products[r.i].name}: ${(r.q / planningWindow.goodCupsPerHour).toFixed(2)} hours. Select product.`}
               style={{
                 background: products[r.i].color,
-                width: `${(r.q / 1200 / 48) * 100}%`,
+                width: `${(r.q / planningWindow.goodCupsPerHour / scaleHours) * 100}%`,
                 border: 0,
               }}
               onClick={() => setSku(r.i)}
-              title={`${products[r.i].name}: ${(r.q / 1200).toFixed(2)} hours`}
+              title={`${products[r.i].name}: ${(r.q / planningWindow.goodCupsPerHour).toFixed(2)} hours`}
             >
               {products[r.i].id}
             </button>
             {index < active.length - 1 && (
               <div
                 className="changeover"
-                style={{ width: `${(0.5 / 48) * 100}%` }}
-                title="0.5 hour changeover"
+                style={{
+                  width: `${(planningWindow.changeoverHours / scaleHours) * 100}%`,
+                }}
+                title={`${planningWindow.changeoverHours} hour changeover`}
               />
             )}
           </div>
@@ -50,15 +64,15 @@ export function Schedule({
       </div>
       <div className="schedule-scale">
         <span>0 hours</span>
-        <span>24 hours</span>
-        <span>48 hours</span>
+        <span>{scaleHours / 2} hours</span>
+        <span>{scaleHours} hours</span>
       </div>
       <p className="chart-note">
         {c.feasible
           ? "✓ Within line allocation"
-          : "! Exceeds 40 allocated hours"}{" "}
-        · Gray blocks: changeovers. Widths represent actual line time; component
-        checks follow below.
+          : `! Exceeds ${planningWindow.availableHours} allocated hours`}{" "}
+        · Gray blocks: {planningWindow.changeoverHours}-hour changeovers. Widths
+        represent actual line time; component checks follow below.
       </p>
     </div>
   );
@@ -83,14 +97,19 @@ export function StockChart({
     row.weeks.map((w, i) => `${x(i)},${y(w[field])}`).join(" ");
   return (
     <>
-      <div className="plot-scroll">
+      <div
+        className="plot-scroll"
+        tabIndex={0}
+        role="region"
+        aria-label={`${row.skuId} stock projection chart · horizontal scroll`}
+      >
         <svg
           viewBox="0 0 640 270"
           className="plot"
           role="img"
           aria-label={`${row.skuId} brand-owned stock projection, cup equivalents by week. Closing stock never negative. Unserved requirement ${n(row.unmet)} cups.`}
         >
-          <title>{row.skuId} simulated brand stock and dispatch · cups</title>
+          <title>{`${row.skuId} simulated brand stock and dispatch · cups`}</title>
           {[0, 0.5, 1].map((t) => (
             <g key={t}>
               <line
@@ -203,7 +222,12 @@ export function ForecastChart({
   const x = (i: number) => 65 + i * 170;
   return (
     <>
-      <div className="plot-scroll">
+      <div
+        className="plot-scroll"
+        tabIndex={0}
+        role="region"
+        aria-label={`${ledger.skuId} forecast comparison chart · horizontal scroll`}
+      >
         <svg
           viewBox="0 0 640 270"
           className="plot"
@@ -354,7 +378,12 @@ export function Waterfall({
     },
   ];
   return (
-    <div className="plot-scroll">
+    <div
+      className="plot-scroll"
+      tabIndex={0}
+      role="region"
+      aria-label="Observed Target portfolio movement chart · horizontal scroll"
+    >
       <svg
         viewBox="0 0 620 310"
         className="plot"

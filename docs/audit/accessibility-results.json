@@ -1,0 +1,69 @@
+{
+  "scope": "Chromium axe checks on all 11 routes, plus mobile dialogs, expanded import checks and four tablet exploration states",
+  "routes": [
+    {
+      "route": "/",
+      "status": "passed",
+      "violations": []
+    },
+    {
+      "route": "/incrementality",
+      "status": "passed",
+      "violations": []
+    },
+    {
+      "route": "/reorder-quality",
+      "status": "passed",
+      "violations": []
+    },
+    {
+      "route": "/cohorts",
+      "status": "passed",
+      "violations": []
+    },
+    {
+      "route": "/production",
+      "status": "passed",
+      "violations": []
+    },
+    {
+      "route": "/components",
+      "status": "passed",
+      "violations": []
+    },
+    {
+      "route": "/allocation",
+      "status": "passed",
+      "violations": []
+    },
+    {
+      "route": "/cash",
+      "status": "passed",
+      "violations": []
+    },
+    {
+      "route": "/forecast-learning",
+      "status": "passed",
+      "violations": []
+    },
+    {
+      "route": "/scenarios",
+      "status": "passed",
+      "violations": []
+    },
+    {
+      "route": "/managed-intelligence",
+      "status": "passed",
+      "violations": []
+    }
+  ],
+  "additionalChecks": [
+    "Mobile evidence drawer",
+    "Mobile navigation dialog",
+    "Expanded raw-input validation",
+    "Release-delay scenario at 768px",
+    "Component-constrained production at 768px",
+    "Component shortage at 768px",
+    "Incompatible allocation destination at 768px"
+  ]
+}

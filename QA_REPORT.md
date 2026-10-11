@@ -1,31 +1,26 @@
 # Verification report
 
-Implementation review: 11 October 2026. Synthetic planning review date: 12 October 2026.
+Completion QA: 11 October 2026. Source planning snapshot: 12 October 2026. Displayed review dates use the viewer's local current date.
+
+The demo's initial audit findings have been resolved. See [FINAL_AUDIT.md](FINAL_AUDIT.md) for the closure record and verification limits.
 
 ## Executed checks
 
-| Check                                              | Result                                               |
-| -------------------------------------------------- | ---------------------------------------------------- |
-| Next.js route type generation (`next typegen`)     | Pass; no app build or server                         |
-| TypeScript (`tsc --noEmit`)                        | Pass                                                 |
-| ESLint (`eslint --max-warnings=0`)                 | Pass; zero errors and warnings                       |
-| Engine/data unit suite                             | 34 tests passed; zero failures                       |
-| Deterministic panel generation                     | 44,800 rows generated and checked                    |
-| Browser-suite discovery (`playwright test --list`) | 23 tests discovered; discovery only                  |
-| Prettier                                           | Pass                                                 |
-| `git diff --check`                                 | Pass                                                 |
-| Legacy domain-content scan                         | Zero whole-token text hits in the working repository |
+| Check                          | Result                                                                            |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| TypeScript                     | Pass                                                                              |
+| ESLint, zero warnings          | Pass                                                                              |
+| Engine/data/generator suite    | 36 tests passed                                                                   |
+| Browser acceptance             | 32 unique cases passed across the suite and targeted reruns                       |
+| Baseline responsiveness        | 110 route/width combinations passed                                               |
+| Active scenario responsiveness | 24 state/width combinations passed, including drawer bounds                       |
+| Route accessibility            | All 11 routes passed axe                                                          |
+| Additional accessibility       | Mobile dialogs, expanded validation table and four tablet explorations passed axe |
+| Live review date               | Midnight rollover verified                                                        |
+| Deterministic panel            | 44,800 rows; existing checksum and reconciliation pass                            |
+| Prettier / diff whitespace     | Pass                                                                              |
 
-The local installed CLI entry points were used after pnpm initially required external cache access. TypeScript compilation for the unit suite emits only test/engine files; it does not build the Next.js application.
-
-## Checks intentionally not executed
-
-- Production build: not run, following the user’s explicit instruction.
-- Development/production server: not started.
-- Browser test execution, visual screenshots and rendered accessibility checks: not run; they need the user-started application.
-- Production lifecycle/rebuild test: updated to the new routes but not executed; it builds and starts servers.
-
-No browser, visual, accessibility or production-build pass is claimed. Responsive breakpoints, internal table/chart scrolling, keyboard focus and native-dialog behavior are implemented and have an unexecuted browser acceptance suite.
+Browser checks used the existing user-started app. Long multi-route tests use appropriate time budgets; the viewport sweeps resize loaded routes to avoid unnecessary server navigation. The production build and production lifecycle/rebuild tests were not run because they build/start servers. No production or cross-browser certification is claimed.
 
 ## Numerical acceptance
 
@@ -54,29 +49,8 @@ The panel tests validate unique keys, deterministic content, integer nonnegative
 
 Generated content SHA-256: `accca71a97ea6d66d56c22fb5ab542cec4db1a3353eeeef8eaee1486b6e820fe`.
 
-## Cleanup evidence
+## Audit artifacts
 
-The case-insensitive whole-token scan used the six requested domain terms, plus the plural physical-unit form, and returned zero text hits. It covers the current working repository, excluding Git history, installed dependencies, binary PDFs and generated TypeScript build metadata. Word boundaries prevent meaningless substring matches inside ordinary words or package-integrity hashes. The user-supplied original specification PDF remains unchanged; it is the source document, not an obsolete operating fixture.
+Current measurements and accessibility outcomes are in `docs/audit/`. The initial report and failing measurements are archived there separately; they are historical findings, not the current sign-off status.
 
-Removed: previous-client routes, domain fixture/selectors, component implementations, tests, product packaging, system logos, stale documentation, unused logo/font assets, unused chart/font/utility-CSS dependencies and old generated application snapshots. The lifecycle test now uses the new analytical routes and controls.
-
-Kept: App Router, shell/dialog patterns, local OFL typography, typed tooling, ESLint/format setup and isolated production lifecycle tooling.
-
-Added: Alec’s catalog/fixture, pure engine, deterministic panel and manifest, eleven planning views, reusable product visual with fallback, classified contextual evidence, URL-backed exploration/reset, proposed theme, numerical/negative-input tests and new browser acceptance tests.
-
-## Files added or replaced
-
-- `src/app/layout.tsx`, `page.tsx`, `globals.css`, `theme.css`, `icon.svg`.
-- `src/app/incrementality/page.tsx`, `reorder-quality/page.tsx`, `cohorts/page.tsx`, `production/page.tsx`, `components/page.tsx`, `allocation/page.tsx`, `cash/page.tsx`, `forecast-learning/page.tsx`, `scenarios/page.tsx`, `managed-intelligence/page.tsx`.
-- `src/components/Workspace.tsx`, `WeeklyBrief.tsx`, `DemandViews.tsx`, `ProductionViews.tsx`, `AnalysisViews.tsx`, `PlanningCharts.tsx`, `evidence.ts`.
-- `src/data/alecs.v1.ts`, `src/data/generated/store-panel.json.gz`, `src/data/generated/manifest.json`.
-- `src/engine/alecs.ts`, `src/engine/panel.ts`, `scripts/generate-panel.ts`.
-- `tests/alecs.test.ts`, `tests/browser/alecs.spec.ts`, `tests/production-lifecycle.mjs`.
-- `package.json`, `pnpm-lock.yaml`, `tsconfig.tests.json`, `playwright.config.ts`, `next.config.ts`, `postcss.config.mjs`, `scripts/production.mjs`, `.env.example`.
-- `README.md`, `IMPLEMENTATION_AUDIT.md`, `ASSET_SOURCES.md`, `ASSETS_NEEDED.md`, `OPEN_QUESTIONS.md`, `QA_REPORT.md`.
-
-## Boundaries and ambiguity resolutions
-
-The full A01–A17 register and exact missing inputs are in `OPEN_QUESTIONS.md`. Important treatments: supplied photographs supersede the missing-assets assumption; original licensing details remain missing. The transfer payment date does not establish arrival. No regional partition is invented outside CC04. Optional AP-106 remains excluded from baseline cash. Case residuals stay visible. Earlier releases require feasible production/QA timing. Club blockage leaves the compatible retail plan intact. Changed exploratory payment dates remain unknown. Statistical/ML methods are proposed unless actually calculated; forecast paths remain supplied synthetic inputs.
-
-All eight photograph mappings and remaining provenance requirements are recorded in `ASSET_SOURCES.md` and `ASSETS_NEEDED.md`. No generated packaging, fake booking, client approval or live integration is present.
+All product image mappings and remaining provenance requirements are documented in `ASSET_SOURCES.md` and `ASSETS_NEEDED.md`. A01–A17 source boundaries remain explicit in `OPEN_QUESTIONS.md`.

@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { Check, CircleAlert, CircleHelp } from "lucide-react";
 import {
   allocation,
@@ -12,6 +11,7 @@ import {
   optionalPO,
   poLines,
   products,
+  planningWindow,
   purchaseOrders,
 } from "../data/alecs.v1";
 import {
@@ -36,6 +36,7 @@ import {
   money,
   n,
   useWorkspace,
+  useInvestigationState,
 } from "./Workspace";
 import { Schedule, StockChart } from "./PlanningCharts";
 import { evidence, productEvidence } from "./evidence";
@@ -51,12 +52,24 @@ const productExplanations = [
 ];
 export function Production() {
   const { sku, setSku, scenario, result } = useWorkspace();
-  const [option, setOption] = useState<"requested" | "reviewed">("reviewed"),
-    [horizon, setHorizon] = useState(8);
+  const [option, setOption] = useInvestigationState(
+      "productionOption",
+      "reviewed",
+      ["requested", "reviewed"] as const,
+    ),
+    [horizon, setHorizon] = useInvestigationState(
+      "productionHorizon",
+      8,
+      [8, 13],
+    );
   const r = calculate(scenario, option, horizon),
     p = products[sku],
     requested = products.map((p) => p.requested),
     reviewed = products.map((p) => p.reviewed);
+  const requestedComponents = componentCoverage(requested),
+    reviewedComponents = componentCoverage(reviewed),
+    base = reviewedComponents.find((c) => c.id === "BASE")!,
+    packaging = reviewedComponents.find((c) => c.id === "CUP-LID")!;
   return (
     <>
       <Heading
@@ -69,7 +82,8 @@ export function Production() {
           <div>
             <h2>One window. Competing commitments.</h2>
             <span>
-              19–23 October · 40 allocated hours · 1,200 good cups / hour
+              19–23 October · {n(planningWindow.availableHours)} allocated hours
+              · {n(planningWindow.goodCupsPerHour)} good cups / hour
             </span>
           </div>
           <EvidenceButton
@@ -79,8 +93,8 @@ export function Production() {
               {
                 requested: capacity(requested),
                 reviewed: capacity(reviewed),
-                baseAvailable: 3200,
-                packagingAvailable: 40000,
+                baseAvailable: base.available,
+                packagingAvailable: packaging.available,
               },
               "Total hours = good cups / 1,200 + 0.5 × max(active flavors − 1, 0). 52,000 → 46.83 h; 40,000 → 36.83 h.",
               {
@@ -101,9 +115,12 @@ export function Production() {
           label="Reviewed mix · Feasible candidate for discussion"
         />
         <p className="chart-note">
-          The reviewed mix leaves 3.17 line hours available, but consumes the
-          available base and cup-and-lid sets. Unused line time does not mean
-          more production is feasible.
+          The reviewed mix leaves{" "}
+          {(
+            planningWindow.availableHours - capacity(reviewed).totalHours
+          ).toFixed(2)}{" "}
+          line hours available, but consumes the available base and cup-and-lid
+          sets. Unused line time does not mean more production is feasible.
         </p>
       </section>
       <div className="section-title">
@@ -125,14 +142,19 @@ export function Production() {
             "Line time · h",
             capacity(requested).totalHours.toFixed(2),
             capacity(reviewed).totalHours.toFixed(2),
-            "40.00",
+            planningWindow.availableHours.toFixed(2),
           ],
-          ["Cup-and-lid sets", n(sum(requested)), n(sum(reviewed)), n(40000)],
+          [
+            "Cup-and-lid sets",
+            n(sum(requested)),
+            n(packaging.required),
+            n(packaging.available),
+          ],
           [
             "Base · kg",
-            n(sum(requested) * 0.08),
-            n(sum(reviewed) * 0.08),
-            n(3200),
+            n(requestedComponents.find((c) => c.id === "BASE")!.required),
+            n(base.required),
+            n(base.available),
           ],
           [
             "Production-cost exposure",
@@ -206,7 +228,7 @@ export function Production() {
           </strong>
           <ul>
             {r.violations.map((v) => (
-              <li key={v}>{v}</li>
+              <li key={`${v.ruleId}:${v.entityId}`}>{v.explanation}</li>
             ))}
           </ul>
           <p>
@@ -226,6 +248,7 @@ export function Production() {
               evidence={productEvidence(
                 sku,
                 "Selected production and stock trajectory",
+                `Aggregate brand-owned stock · W1–W${horizon} · 12 October 2026–${horizon === 8 ? "6 December 2026" : "10 January 2027"}`,
                 {
                   opening: p.opening,
                   requested: p.requested,
@@ -238,7 +261,7 @@ export function Production() {
                   assumptions:
                     "A03 / A06 / A07 / A16: aggregate SKU scope; no invented full node partition. Bridge remains separately supplied.",
                   constraints:
-                    r.violations.join(" ") ||
+                    r.violations.map((v) => v.explanation).join(" ") ||
                     "Release W3, early Honeycomb tranche W5, bridge W6. Run increments and components checked.",
                 },
               )}
@@ -338,7 +361,11 @@ export function Production() {
 export function Components() {
   const { sku, result } = useWorkspace();
   const p = products[sku];
-  const [quantityOption, setQuantityOption] = useState("reviewed");
+  const [quantityOption, setQuantityOption] = useInvestigationState<string>(
+    "componentQuantity",
+    "reviewed",
+    ["reviewed", "requested", "8000", "10000", "12000"],
+  );
   const quantity =
     quantityOption === "reviewed"
       ? p.reviewed
@@ -383,6 +410,7 @@ export function Components() {
               evidence={productEvidence(
                 sku,
                 "Selected product dependency calculation",
+                "Selected production option · 19–23 October 2026 · component requirements, not finished stock",
                 {
                   quantity,
                   coefficients: bom[sku].coefficients,
@@ -438,8 +466,12 @@ export function Components() {
             </div>
             <div className="dependency">
               Run time · before changeovers
-              <strong>{(quantity / 1200).toFixed(2)} h</strong>
-              <span>Portfolio allocation: 40 hours</span>
+              <strong>
+                {(quantity / planningWindow.goodCupsPerHour).toFixed(2)} h
+              </strong>
+              <span>
+                Portfolio allocation: {n(planningWindow.availableHours)} hours
+              </span>
             </div>
             <div className="dependency">
               SKU-specific other ingredient kit
@@ -602,10 +634,21 @@ export function Components() {
 }
 export function Allocation() {
   const { sku, setSku, scenario } = useWorkspace();
-  const [after, setAfter] = useState(false),
-    [departure, setDeparture] = useState(""),
-    [destination, setDestination] = useState("Target"),
-    [pack, setPack] = useState("retail-four-pack");
+  const [after, setAfter] = useInvestigationState<boolean>(
+      "allocationAfter",
+      false,
+    ),
+    [departure, setDeparture] = useInvestigationState<string>("departure", ""),
+    [destination, setDestination] = useInvestigationState<string>(
+      "destination",
+      "Target",
+      ["Target", "Whole Foods", "Hypothetical club"],
+    ),
+    [pack, setPack] = useInvestigationState<string>(
+      "pack",
+      "retail-four-pack",
+      ["retail-four-pack", "club-eight-pack"],
+    );
   const t = transferCheck(
     departure || null,
     products[sku].id,
@@ -650,6 +693,7 @@ export function Allocation() {
             evidence={productEvidence(
               sku,
               "Regional allocation not specified",
+              "Brand-owned stock at 12 October 2026 · regional partition not specified",
               { nodeAllocation: null },
               "A16: no full node dispatch/receipt partition supplied. Aggregate stock is not proof of a compatible regional surplus.",
               {
@@ -675,11 +719,11 @@ export function Allocation() {
               return (
                 <section className="region" key={pool.id}>
                   <p className="eyebrow">BRAND-OWNED CC04 POOL</p>
-                  <h3>
+                  <h2>
                     {pool.id === "Central"
                       ? "Central · other retailers"
                       : "Target " + pool.id}
-                  </h3>
+                  </h2>
                   <div className="stat">
                     {n(stock)}
                     <small> cups</small>
@@ -776,8 +820,16 @@ export function Allocation() {
                   Same finished SKU
                 </li>
                 <li>
-                  <Check />
-                  Compatible retail pack
+                  {pack === "retail-four-pack" ? <Check /> : <CircleAlert />}
+                  {pack === "retail-four-pack"
+                    ? "Compatible retail pack"
+                    : "Pack incompatible with available stock"}
+                </li>
+                <li>
+                  {destination === "Target" ? <Check /> : <CircleAlert />}
+                  {destination === "Target"
+                    ? "Destination permitted for these Target pools"
+                    : "Destination not permitted for these pools"}
                 </li>
                 <li>
                   <Check />
@@ -796,8 +848,14 @@ export function Allocation() {
                   Cold-chain conditions require validation
                 </li>
                 <li>
-                  <CircleHelp />
-                  Arrival before depletion: conditional
+                  {t.arrivalBeforeNeed === false ? (
+                    <CircleAlert />
+                  ) : (
+                    <CircleHelp />
+                  )}
+                  {t.arrivalBeforeNeed === false
+                    ? "Arrival misses the first requirement"
+                    : "Arrival before depletion: conditional"}
                 </li>
               </ul>
               <p>

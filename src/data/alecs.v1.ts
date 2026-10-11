@@ -290,6 +290,7 @@ export const poLines = deepFreeze(
   ].map((line) => ({
     ...meta("SYNTHETIC INPUT", "SPEC-04.16", "A07"),
     ...line,
+    lineId: `${line.poId}-${line.componentId}`,
   })),
 );
 export const optionalPO = deepFreeze({
@@ -315,6 +316,7 @@ export const payments = deepFreeze(
   ].map(([dueDate, label, commitmentId, amount]) => ({
     ...meta("SYNTHETIC INPUT", "SPEC-04.18", "A08"),
     dueDate: String(dueDate),
+    paymentId: `${commitmentId}-${dueDate}`,
     label: String(label),
     commitmentId: String(commitmentId),
     amount: Number(amount),

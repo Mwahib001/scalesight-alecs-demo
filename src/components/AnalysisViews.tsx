@@ -6,6 +6,7 @@ import {
   forecastLedger,
   latestRetail,
   forward,
+  financePolicy,
   missing,
   optionalPO,
   payments,
@@ -40,14 +41,22 @@ import {
   money,
   n,
   useWorkspace,
+  useInvestigationState,
 } from "./Workspace";
 import { CashTimeline, ForecastChart, StockChart } from "./PlanningCharts";
 import { evidence, productEvidence } from "./evidence";
+import { rawInputFeed } from "../data/raw-input.v1";
+import { validateRaw } from "../engine/alecs";
 export function Cash() {
   const { result, scenario } = useWorkspace();
-  const [view, setView] = useState("cash");
+  const [view, setView] = useInvestigationState("cashView", "cash", [
+    "cash",
+    "cost",
+  ]);
   const reviewed = reviewedBaseline,
     requested = economics(products.map((p) => p.requested)),
+    requestedCash = calculate(baselineExploration, "requested").cash
+      .firstWindow,
     total = sum(payments.map((p) => p.amount)),
     deposits = sum(purchaseOrders.map((p) => p.paid));
   return (
@@ -157,7 +166,11 @@ export function Cash() {
           </div>
           <div>
             <span>First-window cash headroom</span>
-            <strong>{money(25000 - reviewed.cash.firstWindow)}</strong>
+            <strong>
+              {money(
+                financePolicy.firstWindowCashLimit - reviewed.cash.firstWindow,
+              )}
+            </strong>
           </div>
         </div>
         <p className="chart-note">
@@ -179,10 +192,14 @@ export function Cash() {
           ],
           [
             "First-window future cash",
-            "At least " + money(29965) + " *",
+            "At least " + money(requestedCash) + " *",
             money(reviewed.cash.firstWindow),
           ],
-          ["First-window cash limit", money(25000), money(25000)],
+          [
+            "First-window cash limit",
+            money(financePolicy.firstWindowCashLimit),
+            money(financePolicy.firstWindowCashLimit),
+          ],
           [
             "Optional AP-106",
             "Uncommitted",
@@ -307,6 +324,7 @@ export function ForecastLearning() {
           evidence={productEvidence(
             sku,
             "Forecast ledger and evaluation",
+            "Target consumer POS and archived forecasts · 14 September–11 October 2026",
             { ...ledger },
             "WAPE = Σ|forecast − actual| / Σactual. Signed bias = Σ(forecast − actual) / Σactual. Return null if total actual is zero.",
             {
@@ -458,6 +476,27 @@ export function ForecastLearning() {
             This method is proposed for a real-data investigation. The current
             demo uses the labeled synthetic comparison.
           </p>
+          <details className="input-checks">
+            <summary>Illustrative input validation</summary>
+            <p className="chart-note">
+              Separate synthetic raw-input feed. Excluded records never enter
+              operating totals; current metadata replaces the stale description.
+            </p>
+            <Table
+              caption="Synthetic import validation results"
+              headers={["Record", "Validation", "Treatment"]}
+              rows={validateRaw(rawInputFeed).map((r) => [
+                r.record.id,
+                r.issue ??
+                  `Valid ${n(r.normalizedCups)} cups after explicit case conversion`,
+                r.excluded
+                  ? "Excluded / investigate"
+                  : r.issue
+                    ? "Current source used; discrepancy retained"
+                    : "Accepted test record only",
+              ])}
+            />
+          </details>
         </section>
       </div>
       <Review decision="Is the difference material enough to change quantities, timing or the next investigation?">
@@ -476,7 +515,11 @@ export function ForecastLearning() {
 export function ScenarioLab() {
   const { sku, scenario, setScenario, result } = useWorkspace();
   const [error, setError] = useState(""),
-    [horizon, setHorizon] = useState(8);
+    [horizon, setHorizon] = useInvestigationState(
+      "scenarioHorizon",
+      8,
+      [8, 13],
+    );
   const r = horizon === 8 ? result : calculate(scenario, "reviewed", 13);
   function change(patch: Partial<Exploration>) {
     try {
@@ -500,6 +543,8 @@ export function ScenarioLab() {
           <button
             key={s.id}
             className="scenario-option"
+            aria-label={s.label}
+            aria-describedby={`scenario-${s.id}-description`}
             aria-pressed={scenario.preset === s.id}
             onClick={() => {
               setScenario(preset(s.id));
@@ -507,7 +552,7 @@ export function ScenarioLab() {
             }}
           >
             <strong>{s.label}</strong>
-            <span>{s.detail}</span>
+            <span id={`scenario-${s.id}-description`}>{s.detail}</span>
           </button>
         ))}
       </div>
@@ -616,7 +661,7 @@ export function ScenarioLab() {
           </strong>
           <ul>
             {r.violations.map((v) => (
-              <li key={v}>{v}</li>
+              <li key={`${v.ruleId}:${v.entityId}`}>{v.explanation}</li>
             ))}
           </ul>
         </div>
@@ -676,6 +721,7 @@ export function ScenarioLab() {
             evidence={productEvidence(
               sku,
               "Scenario inventory and constraint simulation",
+              `Aggregate brand-owned stock · W1–W${horizon} · 12 October 2026–${horizon === 8 ? "6 December 2026" : "10 January 2027"}`,
               {
                 scenario,
                 mix: r.mix,
@@ -688,7 +734,7 @@ export function ScenarioLab() {
                 assumptions:
                   "Unmet dispatch is unserved in its own period, not automatically backlogged. Bridge receipts retain supplied timing.",
                 constraints:
-                  r.violations.join(" ") ||
+                  r.violations.map((v) => v.explanation).join(" ") ||
                   "Base, pack, hours and reviewed release checked. Regional transfer timing remains conditional.",
                 unknown:
                   "Changed payment timing and specialist/client review of any new recommendation.",
@@ -874,6 +920,7 @@ export function ManagedPlanning() {
             evidence={productEvidence(
               0,
               "Prepared illustrative collaboration recommendation",
+              "Target launch evidence · 14 September–11 October 2026; production candidate · 19–23 October 2026",
               {
                 signal:
                   "Strong launch sales alongside weaker incumbent movement.",

@@ -146,6 +146,11 @@ export default function WeeklyBrief() {
                   evidence={productEvidence(
                     d.sku,
                     d.headline,
+                    d.sku === 0
+                      ? "Target consumer POS · 5–11 October 2026; next run · 19–23 October 2026"
+                      : d.sku === 3
+                        ? "Brand-owned East/West CC04 pools · W1–W2 · 12–25 October 2026"
+                        : "Brand-owned opening stock · 12 October 2026; reviewed production and bridge · W1–W8",
                     Object.fromEntries(values),
                     d.sku === 0
                       ? "11,100 − 10,000 = 1,100 observed Target growth; 2,400 launch cups do not establish 2,400 additional portfolio cups."

@@ -133,7 +133,7 @@ for (let i = 0; i < 8; i++)
     const r = calculate(preset("S" + i));
     if (i === 6) {
       assert.equal(r.blocked, true);
-      assert.ok(r.violations.some((v) => v.includes("pack")));
+      assert.ok(r.violations.some((v) => v.explanation.includes("pack")));
     } else {
       approx(r.portfolio.unmet, expected[i][0]!);
       approx(r.portfolio.closing, expected[i][1]!);
@@ -180,8 +180,8 @@ test("late supply cannot retroactively serve earlier unmet demand", () => {
 test("infeasible requested mix does not acquire fictional physical supply", () => {
   const r = calculate(baselineExploration, "requested");
   assert.equal(r.manufacturingFeasible, false);
-  assert.ok(r.violations.some((v) => v.includes("Line hours")));
-  assert.ok(r.violations.some((v) => v.includes("Dairy")));
+  assert.ok(r.violations.some((v) => v.explanation.includes("Line hours")));
+  assert.ok(r.violations.some((v) => v.explanation.includes("Dairy")));
   assert.equal(r.skuWeek[0].weeks[2].receipts, 0);
 });
 test("bounded overrides reject invalid values and do not silently clamp", () => {
@@ -500,4 +500,58 @@ test("availability pooling and hierarchical totals reconcile without fitted-mode
       reconcileForecast(dispatchRecords.filter((r) => r.week === w)).portfolio,
       sum(fixture.forward.map((r) => r[w - 1])),
     );
+});
+
+test("engine contracts preserve structured violations, unresolved timing and dated cash", () => {
+  const requested = calculate(baselineExploration, "requested");
+  assert.ok(requested.violations.length > 0);
+  for (const violation of requested.violations) {
+    assert.ok(violation.ruleId && violation.entityId && violation.explanation);
+    assert.equal(violation.severity, "error");
+  }
+  assert.equal(requested.cash.datedFuturePayments, null);
+  const baseline = calculate();
+  assert.equal(baseline.allocation[0].eligible, true);
+  assert.equal(baseline.allocation[0].arrivalBeforeNeed, null);
+  assert.equal(baseline.allocation[0].donorResidual, 720);
+  assert.equal(
+    sum(baseline.cash.datedFuturePayments!.map((p) => p.amount)),
+    52265,
+  );
+  assert.equal(calculate(preset("S2")).cash.datedFuturePayments, null);
+  assert.ok(
+    calculate(preset("S6")).violations.some((v) => v.severity === "blocked"),
+  );
+  assert.throws(() => convertToCups(1, "pallets" as "cups"), /Unmapped/);
+  assert.equal(
+    lotEligible(
+      lots.find((l) => l.skuId === "CC02")!,
+      {
+        skuId: "CC02",
+        retailer: "Unknown destination",
+        packFormat: "retail-four-pack",
+        needDate: "2026-10-12",
+      },
+    ),
+    false,
+  );
+});
+
+test("separate raw feed covers all specified issue types and keeps current metadata", async () => {
+  const { rawInputFeed } = await import("../src/data/raw-input.v1");
+  const checked = validateRaw(rawInputFeed);
+  assert.equal(checked[0].normalizedCups, 1200);
+  assert.equal(
+    validateRaw([{ id: "BAD-META", skuId: "UNMAPPED", staleMetadata: true }])[0]
+      .excluded,
+    true,
+  );
+  assert.equal(checked.filter((r) => r.issue).length, 12);
+  assert.equal(checked.filter((r) => r.excluded).length, 11);
+  assert.equal(checked.at(-1)!.severity, "warning");
+  assert.equal(checked.at(-1)!.resolvedProductName, products[0].publicName);
+  assert.ok(checked.some((r) => r.issue === "Invalid transfer destination"));
+  assert.ok(checked.some((r) => r.issue === "Pack incompatibility"));
+  assert.ok(checked.some((r) => r.issue?.startsWith("Duplicate demand")));
+  assert.equal(sum(products.map((p) => p.opening)), 42000);
 });
