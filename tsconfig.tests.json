@@ -12,6 +12,7 @@
   "include": [
     "src/data/**/*.ts",
     "src/engine/**/*.ts",
-    "tests/fishwife.test.ts"
+    "tests/alecs.test.ts",
+    "scripts/generate-panel.ts"
   ]
 }
