@@ -1,67 +1,82 @@
-# Fishwife implementation QA — synthetic fixture v1.1
+# Verification report
 
-Reviewed against the original PDF and the user-supplied synthetic supplement on 8 October 2026. All v1.1 histories, channel shares, costs, quantities and policies are illustrative demo inputs, not Fishwife actuals.
+Implementation review: 11 October 2026. Synthetic planning review date: 12 October 2026.
 
-## Completed interactive calculations
+## Executed checks
 
-### Demand and forecast learning
+| Check                                              | Result                                               |
+| -------------------------------------------------- | ---------------------------------------------------- |
+| Next.js route type generation (`next typegen`)     | Pass; no app build or server                         |
+| TypeScript (`tsc --noEmit`)                        | Pass                                                 |
+| ESLint (`eslint --max-warnings=0`)                 | Pass; zero errors and warnings                       |
+| Engine/data unit suite                             | 34 tests passed; zero failures                       |
+| Deterministic panel generation                     | 44,800 rows generated and checked                    |
+| Browser-suite discovery (`playwright test --list`) | 23 tests discovered; discovery only                  |
+| Prettier                                           | Pass                                                 |
+| `git diff --check`                                 | Pass                                                 |
+| Legacy domain-content scan                         | Zero whole-token text hits in the working repository |
 
-All 12 SKUs have the supplied 13-week history from 13 July through 5 October. Six channel series are generated from the exact supplied shares. Each weekly channel sum reconciles to the SKU total after assigning rounding residuals to the largest modeled channel (first in supplied order for ties). All nonzero channels inherit the supplied SKU confidence; zero-share channels explicitly show “No modeled observations,” not zero actual demand. Three forward weeks are visibly distinct planning assumptions.
+The local installed CLI entry points were used after pnpm initially required external cache access. TypeScript compilation for the unit suite emits only test/engine files; it does not build the Next.js application.
 
-Spanish Lemon preserves the original nine observations, 4,300 pre-event baseline, 5,600 current signal, 5,500 recent four-week mean, 30.2% current variance and 27.9% persistence uplift. Event annotation is confined to Spanish Lemon.
+## Checks intentionally not executed
 
-### FBJ PO intervention
+- Production build: not run, following the user’s explicit instruction.
+- Development/production server: not started.
+- Browser test execution, visual screenshots and rendered accessibility checks: not run; they need the user-started application.
+- Production lifecycle/rebuild test: updated to the new routes but not executed; it builds and starts servers.
 
-Receipt convention: period-start receipts are available before demand. Charts show physical inventory, receipt markers, safety reserve and unmet demand, with an accessible numeric table. All options use the same W1–W5 exposure window, ending before the delayed 12 November receipt.
+No browser, visual, accessibility or production-build pass is claimed. Responsive breakpoints, internal table/chart scrolling, keyboard focus and native-dialog behavior are implemented and have an unexecuted browser acceptance suite.
 
-| Option               | Exposure · tins | Units protected vs delay | Incremental recovery |
-| -------------------- | --------------: | -----------------------: | -------------------: |
-| Accept delay         |           6,200 |                        0 |                   $0 |
-| Full expedite        |             200 |                    6,000 |               $8,400 |
-| Split                |           2,200 |                    4,000 |               $5,600 |
-| Split + reduce promo |               0 |                    6,200 |               $5,600 |
+## Numerical acceptance
 
-The recommended option removes 2,400 promotional tins and leaves 200 physical tins before the final receipt. It reaches zero closing stock in W3 without unmet demand; zero exposure is not a claim that safety stock is maintained. Existing PO value is $32,400 and is not charged again as incremental recovery cash. Selection changes the analysis while preserving the reviewed recommendation.
+| Result                                              | Verified value                             |
+| --------------------------------------------------- | ------------------------------------------ |
+| Target prelaunch / latest                           | 10,000 / 11,100 cups                       |
+| Latest operating panel                              | 13,600 cups                                |
+| Collaboration / observed growth                     | 2,400 / 1,100 cups                         |
+| Modeled no-launch portfolio / associated difference | 10,300 / 800 cups                          |
+| Retail receipts / POS / retailer-owned closing      | 14,880 / 10,900 / 3,980 cups               |
+| Requested / reviewed / bridge output                | 52,000 / 40,000 / 40,000 cups              |
+| Requested / reviewed / bridge line hours            | 46.83 / 36.83 / 37.33                      |
+| Reviewed closing stock / unmet dispatch             | 16,800 / 0 cups                            |
+| No-reviewed-run unmet dispatch                      | 28,600 cups                                |
+| Reviewed base / cup-lid / granola consumption       | 3,200 kg / 40,000 sets / 96 kg             |
+| East donor surplus after transfer                   | 720 cups; network stock conserved at 6,000 |
+| Requested / reviewed production cost                | $56,900 / $43,700                          |
+| Reviewed first-window / eight-week future cash      | $18,600 / $52,265                          |
+| Previously paid PO deposits, excluded               | $6,885                                     |
+| Collaboration +25% / Cookies +20% unmet             | 2,700 / 1,200 cups                         |
+| One-week release delay unmet / closing              | 6,300 / 23,100 cups                        |
+| Base-constrained candidate output / unmet           | 32,000 / 4,000 cups                        |
+| Naive / illustrative reviewed WAPE                  | 5.46% / 3.17%                              |
 
-### Gold Label scenarios
+The panel tests validate unique keys, deterministic content, integer nonnegative four-packs, units, listing permissions, positive selling exposure for sales, exact weekly retailer-SKU totals, both cohort matrices, available-day sums, cumulative launch POS and control totals. All 9,600 control rows are excluded from operating demand.
 
-The page starts in the reviewed current HOLD plan. Each of the three tabs loads its exact supplied preset. Valid edits recalculate demand, safety reserve, pre-receipt stockout/safety breach, exposure, response and incremental cash. Invalid inputs retain the last valid results; reset clears overrides and restores the current plan.
+Generated content SHA-256: `accca71a97ea6d66d56c22fb5ab542cec4db1a3353eeeef8eaee1486b6e820fe`.
 
-| Case                  | Stockout before receipt | Safety breach | Exposure | Response     | Incremental recovery |
-| --------------------- | ----------------------- | ------------- | -------: | ------------ | -------------------: |
-| Current plan          | None                    | W4            |        0 | HOLD         |                   $0 |
-| Demand +25%           | None                    | W2            |        0 | SPLIT        |               $3,600 |
-| Supplier +2 weeks     | W6                      | W4            |    1,600 | SPLIT        |               $3,600 |
-| Retailer pull-forward | None                    | W3            |        0 | WATCH / HOLD |                   $0 |
+## Cleanup evidence
 
-Demand +25% leaves 2,000 pre-receipt tins, below the 2,500 protected-demand threshold. Supplier delay recovery removes the 1,600-tin exposure. Pull-forward preserves the supplied six-week total. Threshold boundary tests cover $4,000/$4,001 and 2,000/2,001 protected tins. Extreme demand/delay returns EXPEDITE with remaining exposure still visible; the UI never promises an infeasible recovery eliminates all risk.
+The case-insensitive whole-token scan used the six requested domain terms, plus the plural physical-unit form, and returned zero text hits. It covers the current working repository, excluding Git history, installed dependencies, binary PDFs and generated TypeScript build metadata. Word boundaries prevent meaningless substring matches inside ordinary words or package-integrity hashes. The user-supplied original specification PDF remains unchanged; it is the source document, not an obsolete operating fixture.
 
-Custom-delay recovery timing, over-threshold INVESTIGATE behavior, scaling the pull-forward shape and pre-receipt reporting boundaries are explicitly disclosed demo conventions. See `OPEN_QUESTIONS.md`.
+Removed: previous-client routes, domain fixture/selectors, component implementations, tests, product packaging, system logos, stale documentation, unused logo/font assets, unused chart/font/utility-CSS dependencies and old generated application snapshots. The lifecycle test now uses the new analytical routes and controls.
 
-## Canonical data and source boundaries
+Kept: App Router, shell/dialog patterns, local OFL typography, typed tooling, ESLint/format setup and isolated production lifecycle tooling.
 
-Original 12 SKU operating rows, seven PO IDs/quantities/original dates/statuses, seven one-tin bundle components, four reviewed weekly decisions and totals (41,400 baseline / 45,100 current, +8.9%) remain intact. Costs/MOQs and proposed mussel schedules are sourced to v1.1. Allocation reserves 4,200 tins with 2,600 unmet; the separate bundle snapshot supports 400 packs with an 800-pack gap.
+Added: Alec’s catalog/fixture, pure engine, deterministic panel and manifest, eleven planning views, reusable product visual with fallback, classified contextual evidence, URL-backed exploration/reset, proposed theme, numerical/negative-input tests and new browser acceptance tests.
 
-Mussel schedules show 8,000 Basil Pesto on 22 October and 4,000 on 12 November; Sweet Pepper retains 4,000 on 26 November and moves 8,000 to 17 December. These are proposed schedules, not fabricated PO records or transfers between flavors.
+## Files added or replaced
 
-The supplement still does not provide discretionary trout displacement/release quantities, all production/ready/transit stage dates, previous-review history or exact execution cutoffs. Those remain visibly unspecified outside the three completed calculation pages. No live integration, approval or transaction execution is implied.
+- `src/app/layout.tsx`, `page.tsx`, `globals.css`, `theme.css`, `icon.svg`.
+- `src/app/incrementality/page.tsx`, `reorder-quality/page.tsx`, `cohorts/page.tsx`, `production/page.tsx`, `components/page.tsx`, `allocation/page.tsx`, `cash/page.tsx`, `forecast-learning/page.tsx`, `scenarios/page.tsx`, `managed-intelligence/page.tsx`.
+- `src/components/Workspace.tsx`, `WeeklyBrief.tsx`, `DemandViews.tsx`, `ProductionViews.tsx`, `AnalysisViews.tsx`, `PlanningCharts.tsx`, `evidence.ts`.
+- `src/data/alecs.v1.ts`, `src/data/generated/store-panel.json.gz`, `src/data/generated/manifest.json`.
+- `src/engine/alecs.ts`, `src/engine/panel.ts`, `scripts/generate-panel.ts`.
+- `tests/alecs.test.ts`, `tests/browser/alecs.spec.ts`, `tests/production-lifecycle.mjs`.
+- `package.json`, `pnpm-lock.yaml`, `tsconfig.tests.json`, `playwright.config.ts`, `next.config.ts`, `postcss.config.mjs`, `scripts/production.mjs`, `.env.example`.
+- `README.md`, `IMPLEMENTATION_AUDIT.md`, `ASSET_SOURCES.md`, `ASSETS_NEEDED.md`, `OPEN_QUESTIONS.md`, `QA_REPORT.md`.
 
-## Verification coverage
+## Boundaries and ambiguity resolutions
 
-19 unit acceptance groups cover source integrity, immutable inputs, exact canonical calculations, channel conservation, all FBJ outcomes, every supplied scenario preset, threshold boundaries, long-delay recovery, validation, costs/MOQs and receipt schedules. The projection distinguishes book inventory, physical inventory and unmet demand; a late receipt cannot hide an earlier stockout or safety breach.
+The full A01–A17 register and exact missing inputs are in `OPEN_QUESTIONS.md`. Important treatments: supplied photographs supersede the missing-assets assumption; original licensing details remain missing. The transfer payment date does not establish arrival. No regional partition is invented outside CC04. Optional AP-106 remains excluded from baseline cash. Case residuals stay visible. Earlier releases require feasible production/QA timing. Club blockage leaves the compatible retail plan intact. Changed exploratory payment dates remain unknown. Statistical/ML methods are proposed unless actually calculated; forecast paths remain supplied synthetic inputs.
 
-29 Playwright tests cover:
-
-- All eleven routes through direct entry, exact headings, active navigation and client navigation.
-- Desktop and mobile axe accessibility with no excluded rules; widths 1440, 1280, 768 and 390; supply label containment also at 1024.
-- All four weekly decision drawers, all seven PO row targets, Escape/focus restoration, analysis-link navigation and scroll-lock cleanup.
-- All 84 SKU/channel contexts, modeled charts, zero-share empty states and demand reset.
-- All four FBJ options with changing chart paths, exposure, costs and quantities.
-- All scenario presets and controls, keyboard tabs, invalid-input retention, threshold responses and reset.
-- Allocation/bundle toggles, separate inventory contexts and explicit unsupplied outcomes.
-- Internal links, source anchors, loaded images, Cin7 logo and nine-step managed-service narrative.
-- Mobile footer navigation, focus containment, resize cleanup and persistent disclosure cleanup.
-
-Visual inspection of the updated demand, PO intervention and supplier-delay scenario confirms readable charts, receipt markers, metrics and comparison explanations. Browser testing identified and corrected SVG title hydration errors; titles now render as single stable text strings. Risk and response receipt markers are distinguished in the scenario chart.
-
-Final verification: `pnpm verify:fishwife` passes — 19 unit acceptance groups, TypeScript, ESLint, production build and all 29 browser tests (2.3 minutes). All eleven routes pass desktop/mobile accessibility with zero axe violations and no browser console or hydration errors. A separate exact comparison verified all 12 history rows, 12 channel-share rows and 12 economics rows against the saved user supplement. `git diff --check` passes.
+All eight photograph mappings and remaining provenance requirements are recorded in `ASSET_SOURCES.md` and `ASSETS_NEEDED.md`. No generated packaging, fake booking, client approval or live integration is present.

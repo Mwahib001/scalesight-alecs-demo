@@ -1,35 +1,37 @@
-# Source status after synthetic fixture v1.1
+# Assumptions and unresolved inputs
 
-The user supplied and authorized [Canonical Synthetic Fixture v1.1](docs/SYNTHETIC_FIXTURE_V1_1.md) on 8 October 2026. Its figures are synthetic demo inputs, not public facts or Fishwife actuals. It supplements the original PDF without altering original SKU positions or PO IDs.
+The synthetic guide is executable at aggregate SKU scope. Unknown client inputs remain unknown; they are not filled with zero. These are the guide’s A01–A17 boundaries, not requests to approve the illustrative recommendations.
 
-## Resolved for the three interactive pages
+| ID  | Boundary / treatment                                                                                                        | Exact real-world value or evidence needed                                                                                                                       |
+| --- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A01 | 220 operating stores plus 60 comparison stores; synthetic 14 September launch. No actual door-count claim.                  | Actual store universe, panel membership, launch dates and complete 20-week POS coverage.                                                                        |
+| A02 | CC01 Target-only restriction is public; other retailer eligibility is synthetic.                                            | Authorized SKU × retailer assortment, pack and destination permissions.                                                                                         |
+| A03 | Forecast, buffers and unchanged retailer inventory targets are synthetic. Firm orders consume forecast.                     | Versioned dispatch forecasts, firm orders, retailer inventory targets and client buffer policies.                                                               |
+| A04 | 1,200 good cups/hour, 0.5-hour changeovers, 2,000-cup increments and 40 allocated hours are supplied assumptions.           | Actual rates/yield, run minimums/increments, changeovers, allocated line hours and QA release calendar.                                                         |
+| A05 | Component coefficients, prices, SKU-specific kits and purchase multiples are planning assumptions, not recipes.             | Approved planning BOM, purchasing units/multiples, prices and available-by-run quantities.                                                                      |
+| A06 | Opening brand stock, lots, QA and expiries are synthetic.                                                                   | Stock by owner, node, SKU, pack, lot, expiry and release status.                                                                                                |
+| A07 | Bridge, early Honeycomb supply and AP-101–105 are synthetic confirmed planning commitments only.                            | Actual run/PO commitments, receipt ETAs, component lead times and supplier terms.                                                                               |
+| A08 | Opening materials previously paid; component POs use 30/70 split. Old deposits excluded from future cash.                   | Actual paid/unpaid ledger, dated conversion payments and cash limit.                                                                                            |
+| A09 | CC04 transfer has 2-day transit + 1-day release; quantity arithmetic is supported, physical timing unresolved.              | Exact dispatch date, actual arrival/release date, West’s intraweek depletion date and validated cold-chain conditions. **26 October is the payment date only.** |
+| A10 | AP-106 is a $300 uncommitted granola option; excluded from baseline cash. Reversibility unknown.                            | Deposit due date, balance due date, cancellation/refund terms, supplier commitment and valid delivery date.                                                     |
+| A11 | Archived ledger uses documented synthetic prior-week issue dates. Promo/price records remain null.                          | Actual forecast issue timestamps, actual-observation timestamps, promotion flags and price indices.                                                             |
+| A12 | Counterfactual uses synthetic matched controls and ±500-cup assumption sensitivity. No causal or confidence-interval claim. | Comparable distribution, selling exposure, pricing/promotion history, commercial events and causal-identification design.                                       |
+| A13 | Hypothetical club request: 4,000 cups / 500 eight-cup packs. Blocked; no retail-pack conversion.                            | Defined club carton/BOM, approved packing process/capacity, destination permission, compatible supply and confirmed requirement.                                |
+| A14 | Palette proposed; local Albert Sans / Petrona substitutes; text wordmark.                                                   | Certified brand tokens, licensed official fonts, or confirmation to retain substitutes.                                                                         |
+| A15 | Deterministic LCG seed 241; largest remainder ties by stable ID; controlled availability; interpolated controls.            | Real store-level observations to replace synthetic generation. No additional demo input needed.                                                                 |
+| A16 | Full inventory engine operates at aggregate SKU scope. CC04 is the only supplied regional worked case.                      | Full SKU × node × period dispatch, receipts, lot partition and protection policies, or an explicitly labeled fixture partition rule.                            |
+| A17 | No client approval, named analyst identity, operational execution or fake booking flow. Next review date is null.           | Real authorized review identity, decision status, next review date and booking destination if desired.                                                          |
 
-| Page            | Supplied and implemented                                                                                                                                                                                                                                                 |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Demand          | All 12 thirteen-week histories, six channel shares per SKU, integer rounding with residual assigned to the largest share, and confidence classifications. Zero-share channels deliberately display “No modeled observations.”                                            |
-| PO Intervention | Receipt-before-demand convention; 29 Oct early receipt and 12 Nov standard/delayed receipt; 1,900 protected tins/week; 2,400-tin promotional reduction. Four outcomes calculate to 6,200 / 200 / 2,200 / 0 exposed tins and $0 / $8,400 / $5,600 / $5,600 recovery cost. |
-| Scenario        | Gold Label opening position, receipt, costs/MOQ, protected demand, split/full recovery quantities and premiums, decision thresholds, and three exact presets. Risk, cash, response and charts recalculate from valid inputs.                                             |
-| Supply context  | Basil Pesto: 8,000 on 22 Oct, 4,000 on 12 Nov. Sweet Pepper: 4,000 on 26 Nov, 8,000 on 17 Dec. Original PO records remain separate from proposed recovery schedules.                                                                                                     |
+## Implementation decisions
 
-The supplement also supplies landed costs and MOQs for all 12 SKUs and confirms that allocation and bundle examples use separate snapshots.
-
-## Explicit implementation conventions for custom scenarios
-
-- Recovery arrives one period before the standard receipt, capped at the original 5 Nov receipt date. This reproduces both supplied recovery presets and extends them to custom delays.
-- An otherwise qualifying split above the $4,000 premium threshold returns INVESTIGATE; the supplied EXPEDITE rule takes precedence when its exposure criteria apply.
-- Demand-change overrides scale the retailer pull-forward shape. Beyond its six supplied weeks, demand returns to the scaled baseline.
-- Pre-receipt risk metrics stop before the standard receipt; the final chart point shows the opening receipt without consuming an additional demand period. Unmet demand is tracked separately from nonnegative physical stock.
-- Cash is incremental recovery premium. Existing PO value is shown separately and is not charged again.
-- Tied largest channel shares use the first channel in the supplied channel order for rounding residuals.
-
-These extensions are documented demo conventions, not additional supplied Fishwife policies.
-
-## Still unspecified outside those three pages
-
-- **Allocation/bundles:** discretionary trout quantity, displacement priority and amount released when account protection is turned off. The supplement confirms separate snapshots but does not supply these quantities; toggle outcomes remain qualitative.
-- **Supply stages:** production, ready and transit dates; additional PO IDs for aggregate incoming records. No IDs or stage dates are invented.
-- **Review copy:** previous-review snapshot and approval of the seven draft weekly observations.
-- **Execution cutoffs:** exact supplier, freight and cannery cutoff timestamps.
-- **Optional brand assets:** licensed Recoleta webfont and authorized Fishwife wordmark. The existing open serif fallback and supplied logos remain in use.
-
-These gaps do not prevent the completed demand, FBJ recovery or Gold Label scenario calculations. The demo does not execute transactions or connect to live Fishwife systems.
+- User-supplied product images supersede the prompt’s missing-assets statement; packaging identity determines mapping, not filename order. Original URLs, retrieval dates and permission records remain missing in the asset register.
+- Transfer date selection is exploratory. Earliest released stock = dispatch + three days. A release later than W1 cannot satisfy West’s first weekly bucket. Even a release within W1 remains conditional because exact intraweek depletion is unspecified. No invented daily run rate is used.
+- Case-only execution exposes `ceil(cups / 24) × 24 − cups` as a residual. It never changes the canonical planning quantities. Actual retailer POS and receipts retain their physical units.
+- Earlier-than-W3 releases are infeasible under the supplied production/QA calendar until new timing evidence exists. Infeasible first-window output is excluded from physical stock; separate bridge commitments remain intact.
+- Club compatibility blocks the additional hypothetical requirement; it does not erase the existing retail plan. Compatible club supply, served and unmet quantities are null until the separate supply definition exists.
+- Component-constrained S5 uses the supplied 32,000-cup candidate. Other availability edits validate the selected mix; the engine does not invent an optimized mix or additional supply.
+- Demand changes remain continuous expected cup-equivalents. Timing controls use integer weeks. Invalid controls produce the supplied error message; no clamping occurs.
+- Forecast issue dates use the preceding Monday and actual-observation dates the following Monday, following Appendix 10.D. Interpolated control four-packs use half-up rounding (`Math.round`); stable-ID largest-remainder allocation follows Appendix 10.C.
+- Changed exploratory cost is calculated, but changed payment dates remain unspecified. The dated baseline payment schedule stays clearly identified and unchanged.
+- Final forward buffers are incomplete if the required future weeks lie outside the supplied 13-week forecast. No implied future supply is introduced.
+- The browser suite uses an externally started app. Production build, server startup and browser execution were intentionally deferred to the user.
