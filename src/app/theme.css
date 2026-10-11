@@ -1,5 +1,9 @@
-/* A14: proposed, not certified Alec's brand tokens. Flavor accents are separate from status colors. */
+/* A14: proposed, not certified Alec's brand tokens. User-requested blue pairs with the cream base. Flavor accents are separate from status colors. */
 :root {
+  --primary: #124398;
+  --primary-hover: #0e3579;
+  --primary-soft: #edf2fa;
+  --primary-border: #bbcce7;
   --background: #fff8ee;
   --ink: #21372f;
   --card: #fffefa;

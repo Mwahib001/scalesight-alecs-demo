@@ -309,7 +309,7 @@ export function ReorderQuality() {
                         width="65"
                         height={(v / max) * 60}
                         rx="3"
-                        fill={["#997357", "#21372F", "#A24D68"][l]}
+                        fill={["#997357", "var(--primary)", "#A24D68"][l]}
                       />
                       <text
                         x={188 + i * 120}
@@ -474,7 +474,9 @@ export function CohortView() {
                       cx={x(velocity)}
                       cy={y(movement)}
                       r={i === cohort ? 18 : 13}
-                      fill={["#21372F", "#7E5B43", "#A24D68", "#526999"][i]}
+                      fill={
+                        ["var(--primary)", "#7E5B43", "#A24D68", "#526999"][i]
+                      }
                       opacity={i === cohort ? 1 : 0.75}
                     />
                     <text

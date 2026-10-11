@@ -132,12 +132,12 @@ export function StockChart({
           <polyline
             points={points("closing")}
             fill="none"
-            stroke="#21372F"
+            stroke="var(--primary)"
             strokeWidth="3"
           />
           {row.weeks.map((w, i) => (
             <g key={w.week}>
-              <circle cx={x(i)} cy={y(w.closing)} r="4" fill="#21372F" />
+              <circle cx={x(i)} cy={y(w.closing)} r="4" fill="var(--primary)" />
               {w.unmet > 0 && (
                 <rect
                   x={x(i) - 9}
@@ -160,7 +160,7 @@ export function StockChart({
       </div>
       <div className="legend">
         <span>
-          <i style={{ background: "#21372F" }} />
+          <i style={{ background: "var(--primary)" }} />
           Closing physical stock
         </span>
         <span>
@@ -231,7 +231,7 @@ export function ForecastChart({
             <g key={key}>
               <polyline
                 points={ledger[key].map((v, i) => `${x(i)},${y(v)}`).join(" ")}
-                stroke={["#21372F", "#997357", "#A54E6B"][k]}
+                stroke={["var(--primary)", "#997357", "#A54E6B"][k]}
                 strokeWidth="2.5"
                 strokeDasharray={k === 1 ? "5 4" : undefined}
                 fill="none"
@@ -242,7 +242,7 @@ export function ForecastChart({
                   cx={x(i)}
                   cy={y(v)}
                   r="4"
-                  fill={["#21372F", "#997357", "#A54E6B"][k]}
+                  fill={["var(--primary)", "#997357", "#A54E6B"][k]}
                 />
               ))}
             </g>
@@ -264,7 +264,11 @@ export function ForecastChart({
           "Illustrative reviewed forecast",
         ].map((s, i) => (
           <span key={s}>
-            <i style={{ background: ["#21372F", "#997357", "#A54E6B"][i] }} />
+            <i
+              style={{
+                background: ["var(--primary)", "#997357", "#A54E6B"][i],
+              }}
+            />
             {s}
           </span>
         ))}
@@ -346,7 +350,7 @@ export function Waterfall({
       bottom: 0,
       top: latest,
       value: n(latest),
-      color: "#21372F",
+      color: "var(--primary)",
     },
   ];
   return (
@@ -382,7 +386,7 @@ export function Waterfall({
               x={118 + i * 135}
               y={y(d.top) - 11}
               textAnchor="middle"
-              style={{ fill: "#21372F", fontSize: 16, fontWeight: 500 }}
+              style={{ fill: "var(--ink)", fontSize: 16, fontWeight: 500 }}
             >
               {d.value}
             </text>

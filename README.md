@@ -59,7 +59,7 @@ The browser suite has no webServer hook. It covers direct route loading, the fou
 - `src/components/Workspace.tsx`: persistent navigation, query-string product/cohort/scenario context, accessible native-dialog Evidence Drawer, disclosures and reset. Context is shareable and survives direct loading and browser history.
 - `src/components/WeeklyBrief.tsx`, `DemandViews.tsx`, `ProductionViews.tsx`, `AnalysisViews.tsx`: the eleven product-led views. Relevant analytical results use the same exploratory engine output; reviewed proposals stay identifiable.
 - `src/components/PlanningCharts.tsx`: distinct accessible SVG comparisons and production schedules; legends, units and text/table equivalents.
-- `src/app/theme.css`: single proposed token palette, explicitly not certified official Alec’s colors. Albert Sans and Petrona are self-hosted OFL substitutes, not claimed brand fonts.
+- `src/app/theme.css`: single proposed token palette pairing the cream base with the user-requested `#124398` blue accent, explicitly not certified official Alec’s colors. Albert Sans and Petrona are self-hosted OFL substitutes, not claimed brand fonts.
 - `tests/alecs.test.ts`: numerical acceptance, invariants, generator and negative-input checks.
 
 All financial amounts are USD. Forecasts can be fractional cup-equivalents; retailer POS is integer four-packs. Canonical planning anchors are not silently case-rounded. No operational execution controls or live integrations exist.
