@@ -71,3 +71,5 @@ All financial amounts are USD. Forecasts can be fractional cup-equivalents; reta
 The regional transfer is quantity-feasible but timing remains conditional. AP-106 is optional and excluded from baseline cash. Club demand is blocked until separately compatible supply is defined. Later inventory never retroactively resolves earlier unmet dispatch. Proposed analytical methods are not presented as trained models or client results.
 
 Analysis maintained by ScaleSight. Decisions made with the client.
+
+The displayed workspace review date uses the viewer’s current local date, refreshed on opening, window focus and every minute. Historical source dates, planning periods and payment dates remain fixed to the synthetic snapshot. `src/components/LiveDate.tsx` provides the shared display.

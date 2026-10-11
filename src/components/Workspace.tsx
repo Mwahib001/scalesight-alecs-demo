@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { LiveDate } from "./LiveDate";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -290,7 +291,7 @@ export function Workspace({ children }: { children: ReactNode }) {
         </header>
         <div className="review-bar">
           <span>
-            <CalendarDays size={14} /> Review date: 12 October 2026
+            <CalendarDays size={14} /> Review date: <LiveDate />
           </span>
           <span className={active ? "exploring-state" : "baseline-state"}>
             {active ? <FlaskConical size={13} /> : <Check size={13} />}{" "}
@@ -383,7 +384,7 @@ export function Workspace({ children }: { children: ReactNode }) {
               <dd>
                 {evidence.sourceId} · ALECS-DEMO-2026-10-12-V1
                 <br />
-                As of 11 October 2026 · reviewed 12 October 2026
+                Source as of 11 October 2026 · review date: <LiveDate />
                 {evidence.source && (
                   <a href={evidence.source} target="_blank" rel="noreferrer">
                     Public product source ↗

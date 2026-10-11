@@ -12,6 +12,7 @@ import {
   n,
 } from "./Workspace";
 import { productEvidence } from "./evidence";
+import { LiveDate } from "./LiveDate";
 const decisions = [
   {
     sku: 0,
@@ -52,7 +53,9 @@ export default function WeeklyBrief() {
     <>
       <div className="issue-line">
         <strong>Retail-to-Production Planning</strong>
-        <span>Weekly review · 12 October 2026</span>
+        <span>
+          Weekly review · <LiveDate />
+        </span>
       </div>
       <div className="brief-heading">
         <Heading
