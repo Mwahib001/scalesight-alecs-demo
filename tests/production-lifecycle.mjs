@@ -71,7 +71,7 @@ try {
     if (response.status() >= 400)
       failures.push(`${response.status()} ${response.url()}`);
   });
-  await page.goto(`${url}/scenario`);
+  await page.goto(`${url}/scenarios`);
   const version = await page.locator("html").getAttribute("data-dpl-id");
   assert.ok(version, "Production HTML must carry a deployment ID");
   build = launch("build");
@@ -82,11 +82,13 @@ try {
   });
   let reloads = 0;
   while (building) {
-    await page.goto(`${url}/scenario`);
-    await page.getByRole("tab", { name: "Supplier slips" }).click();
+    await page.goto(`${url}/scenarios`);
     await page
-      .getByTestId("scenario-response")
-      .getByText("SPLIT", { exact: true })
+      .getByRole("button", { name: "Release arrives one week late" })
+      .click();
+    await page
+      .locator(".metric-strip")
+      .getByText("6,300", { exact: false })
       .waitFor();
     assert.equal(
       await page.locator("html").getAttribute("data-dpl-id"),
@@ -95,7 +97,7 @@ try {
     );
     assert.ok(
       await page
-        .locator(".planning-plot")
+        .locator(".plot")
         .evaluate((el) => el.getBoundingClientRect().height > 100),
     );
     reloads++;
@@ -117,16 +119,16 @@ try {
     "Restart must serve the new build",
   );
   for (const route of [
-    "/demand",
-    "/po-intervention",
-    "/scenario",
+    "/incrementality",
+    "/production",
+    "/scenarios",
     "/forecast-learning",
   ]) {
     await page.goto(url + route);
-    await page.locator(".planning-plot").waitFor();
+    await page.locator(".plot").waitFor();
     assert.ok(
       await page
-        .locator(".planning-plot")
+        .locator(".plot")
         .evaluate((el) => el.getBoundingClientRect().height > 100),
     );
   }

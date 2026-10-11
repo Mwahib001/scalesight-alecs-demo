@@ -1,0 +1,19 @@
+/* A14: proposed, not certified Alec's brand tokens. Flavor accents are separate from status colors. */
+:root {
+  --background: #fff8ee;
+  --ink: #21372f;
+  --card: #fffefa;
+  --border: #e5dfd4;
+  --muted: #66736a;
+  --pink: #e98aa3;
+  --yellow: #f1d46a;
+  --sage: #8fb69c;
+  --coffee: #997357;
+  --navy: #172b45;
+  --status-warning: #80521a;
+  --status-danger: #943b35;
+  --status-good: #315c44;
+  --sidebar: 252px;
+  --heading: Petrona, Georgia, serif;
+  --body: Albert, Arial, sans-serif;
+}

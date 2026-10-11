@@ -84,7 +84,7 @@ try {
     process.exitCode = await runNext(
       ["build", "--webpack", ...process.argv.slice(3)],
       {
-        FISHWIFE_RUNTIME_DIR: "",
+        ALECS_RUNTIME_DIR: "",
         NEXT_DEPLOYMENT_ID: randomUUID().replaceAll("-", ""),
       },
     );
@@ -109,7 +109,7 @@ try {
       "Serving an isolated production build; rebuilds will not change this server. Restart to use a newer build.",
     );
     process.exitCode = await runNext(["start", ...process.argv.slice(3)], {
-      FISHWIFE_RUNTIME_DIR: relative,
+      ALECS_RUNTIME_DIR: relative,
       NEXT_DEPLOYMENT_ID: config.deploymentId || "",
     });
   }

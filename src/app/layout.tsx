@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
-import { AppShell } from "../components/AppShell";
+import { Workspace } from "../components/Workspace";
 export const metadata: Metadata = {
-  title: "Fishwife × ScaleSight — Supply Commitment Planning",
+  title: "Alec's × ScaleSight",
   description:
-    "A prepared Fishwife supply planning room. Illustrative operating inputs; analysis maintained by ScaleSight. Decisions made with Fishwife.",
+    "Retail signals, reviewed against production, components and cash.",
   robots: { index: false, follow: false },
   icons: { icon: "/icon.svg" },
 };
@@ -16,7 +17,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AppShell>{children}</AppShell>
+        <Suspense
+          fallback={
+            <div className="loading">
+              Alec’s × ScaleSight · Retail-to-Production Planning
+            </div>
+          }
+        >
+          <Workspace>{children}</Workspace>
+        </Suspense>
       </body>
     </html>
   );

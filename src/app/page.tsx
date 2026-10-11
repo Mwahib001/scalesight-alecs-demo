@@ -1,4 +1,4 @@
-import { WeeklyBrief } from "../components/WeeklyBrief";
+import WeeklyBrief from "../components/WeeklyBrief";
 export default function Page() {
   return <WeeklyBrief />;
 }
